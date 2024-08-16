@@ -20,12 +20,14 @@
 import os
 
 MYSQL_DATABASE = os.environ.get("MYSQL_DATABASE", "skale_portal")
-MYSQL_USER = os.environ.get("MYSQL_USER", "skale_user")
-MYSQL_PASSWORD = os.environ.get("MYSQL_PASSWORD", "skale_password")
 MYSQL_HOST = os.environ.get("MYSQL_HOST", "db")
+
+MYSQL_USER = os.environ["MYSQL_USER"]
+MYSQL_PASSWORD = os.environ["MYSQL_PASSWORD"]
+
 MYSQL_PORT = 3306
 
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
-SECRET_KEY = os.environ.get("SECRET_KEY", "your-secret-key")
+SECRET_KEY = os.environ["SECRET_KEY"]
 
 TOKEN_EXPIRATION = 3600 * 24 * 30
