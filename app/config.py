@@ -30,4 +30,6 @@ MYSQL_PORT = 3306
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 SECRET_KEY = os.environ["SECRET_KEY"]
 
+DOMAIN_NAME = os.environ["DOMAIN_NAME"]
+
 TOKEN_EXPIRATION = 3600 * 24 * 30
