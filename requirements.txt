@@ -5,7 +5,3 @@ peewee==3.17.6
 PyMySQL==1.1.1
 gunicorn==23.0.0
 cryptography==3.4.7
-
-types-peewee==3.17.6.20240813
-types-PyMySQL==1.1.0.20240524
-types-Flask-Cors==4.0.0.20240806

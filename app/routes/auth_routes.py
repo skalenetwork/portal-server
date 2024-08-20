@@ -34,6 +34,7 @@ def get_nonce():
 
 @auth_bp.route("/signin", methods=["POST"])
 def sign_in():
+    logger.info("sign_in called")
     try:
         message = request.json["message"]
         signature = request.json["signature"]
@@ -73,6 +74,7 @@ def sign_in():
 
 @auth_bp.route("/signout", methods=["POST"])
 def sign_out():
+    logger.info("sign_out called")
     try:
         auth_token = request.cookies.get("auth_token")
 

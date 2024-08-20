@@ -35,7 +35,7 @@ To use with SSL certs, update the `ssl.conf` file in the `nginx` directory with 
 ## Deployment
 
 ```
-docker-compose up --build
+docker compose up --build
 ```
 
 ## License

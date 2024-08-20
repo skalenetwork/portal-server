@@ -23,6 +23,10 @@ from app.routes.auth_routes import auth_bp
 from app.routes.like_routes import like_bp
 from app.models import initialize_db
 from app.config import SECRET_KEY, DEBUG
+from app.utils.logs import init_default_logger
+
+
+init_default_logger()
 
 
 def create_app():

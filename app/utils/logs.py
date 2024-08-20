@@ -17,37 +17,19 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
 import sys
 import logging
-import logging.handlers as py_handlers
 from logging import Formatter, StreamHandler
 
 
 LOG_FORMAT = (
     "[%(asctime)s %(levelname)s] %(name)s:%(lineno)d - %(threadName)s - %(message)s"
 )
-LOG_FILEPATH = os.path.join(os.getcwd(), "portal-server.log")
-
-LOG_FILE_SIZE_MB = 300
-LOG_FILE_SIZE_BYTES = LOG_FILE_SIZE_MB * 1000000
-LOG_BACKUP_COUNT = 3
-
-
-def get_file_handler(log_filepath, log_level):
-    formatter = Formatter(LOG_FORMAT)
-    f_handler = py_handlers.RotatingFileHandler(
-        log_filepath, maxBytes=LOG_FILE_SIZE_BYTES, backupCount=LOG_BACKUP_COUNT
-    )
-    f_handler.setFormatter(formatter)
-    f_handler.setLevel(log_level)
-    return f_handler
 
 
 def init_default_logger():
     formatter = Formatter(LOG_FORMAT)
-    f_handler = get_file_handler(LOG_FILEPATH, logging.INFO)
     stream_handler = StreamHandler(sys.stderr)
     stream_handler.setFormatter(formatter)
     stream_handler.setLevel(logging.INFO)
-    logging.basicConfig(level=logging.DEBUG, handlers=[f_handler, stream_handler])
+    logging.basicConfig(level=logging.DEBUG, handlers=[stream_handler])
