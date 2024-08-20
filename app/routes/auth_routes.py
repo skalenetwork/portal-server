@@ -17,11 +17,14 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
+import secrets
 from flask import Blueprint, request, jsonify, make_response
 from siwe import SiweMessage, ExpiredMessage
+
 from app.models import Account
-import secrets
-import logging
+from app.config import DOMAIN_NAME
+
 
 auth_bp = Blueprint("auth", __name__)
 logger = logging.getLogger("portal:auth")
@@ -63,7 +66,8 @@ def sign_in():
             account.sign_in_token,
             httponly=True,
             secure=True,
-            samesite="Strict",
+            samesite="None",
+            domain=DOMAIN_NAME,
         )
         return response
     except Exception as e:
@@ -87,7 +91,13 @@ def sign_out():
 
         response = make_response(jsonify({"success": True}))
         response.set_cookie(
-            "auth_token", "", expires=0, httponly=True, secure=True, samesite="Strict"
+            "auth_token",
+            "",
+            expires=0,
+            httponly=True,
+            secure=True,
+            samesite="None",
+            domain=DOMAIN_NAME,
         )
 
         return response, 200

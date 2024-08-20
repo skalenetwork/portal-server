@@ -17,7 +17,12 @@ MYSQL_USER=user
 MYSQL_ROOT_PASSWORD=root_password
 MYSQL_PASSWORD=password
 SECRET_KEY=secret_key
+DOMAIN_NAME=portal-server.com
 ```
+
+SLL certs:
+
+Put `fullchain.pem` and `privkey.pem` in the `ssl_certs` directory.
 
 To use with SSL certs, update the `ssl.conf` file in the `nginx` directory with your SSL certificate paths.
 
