@@ -2,10 +2,7 @@ name: Test portal-server
 on: [push, pull_request]
 
 jobs:
-  test_proxy:
-    defaults:
-      run:
-        working-directory: metrics
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
