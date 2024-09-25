@@ -23,64 +23,64 @@ from flask import Blueprint, request, jsonify, make_response
 from siwe import SiweMessage, ExpiredMessage
 
 from app.models import Account
-from app.config import DOMAIN_NAME
+from app.config import DOMAIN_NAME, COOKIE_KEY_NAME
 
 
-auth_bp = Blueprint("auth", __name__)
-logger = logging.getLogger("portal:auth")
+auth_bp = Blueprint('auth', __name__)
+logger = logging.getLogger('portal:auth')
 
 
-@auth_bp.route("/nonce", methods=["GET"])
+@auth_bp.route('/nonce', methods=['GET'])
 def get_nonce():
-    return jsonify({"nonce": secrets.token_hex(32)})
+    return jsonify({'nonce': secrets.token_hex(32)})
 
 
-@auth_bp.route("/signin", methods=["POST"])
+@auth_bp.route('/signin', methods=['POST'])
 def sign_in():
-    logger.info("sign_in called")
+    logger.info('sign_in called')
     try:
-        message = request.json["message"]
-        signature = request.json["signature"]
+        message = request.json['message']
+        signature = request.json['signature']
 
-        logger.info("message")
+        logger.info('message')
         logger.info(message)
 
         siwe_message = SiweMessage(
-            **message, issued_at=message["issuedAt"], chain_id=message["chainId"]
+            **message, issued_at=message['issuedAt'], chain_id=message['chainId']
         )
 
         try:
             siwe_message.verify(signature)
         except ExpiredMessage:
-            return jsonify({"error": "Message has expired"}), 400
+            return jsonify({'error': 'Message has expired'}), 400
         except Exception as e:
-            return jsonify({"error": f"Verification failed: {str(e)}"}), 400
+            return jsonify({'error': f'Verification failed: {str(e)}'}), 400
 
         account, created = Account.get_or_create(address=siwe_message.address)
         account.sign_in_token = secrets.token_hex(32)
         account.save()
 
-        response = jsonify({"success": True})
+        response = jsonify({'success': True})
         response.set_cookie(
-            "auth_token",
+            COOKIE_KEY_NAME,
             account.sign_in_token,
             httponly=True,
             secure=True,
-            samesite="None",
+            samesite='None',
             domain=DOMAIN_NAME,
         )
         return response
     except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}")
+        logger.error(f'Unexpected error: {str(e)}')
         logger.exception(e)
-        return jsonify({"error": f"Unexpected error: {str(e)}"}), 400
+        return jsonify({'error': f'Unexpected error: {str(e)}'}), 400
 
 
-@auth_bp.route("/signout", methods=["POST"])
+@auth_bp.route('/signout', methods=['POST'])
 def sign_out():
-    logger.info("sign_out called")
+    logger.info('sign_out called')
     try:
-        auth_token = request.cookies.get("auth_token")
+        auth_token = request.cookies.get(COOKIE_KEY_NAME)
 
         if auth_token:
             account = Account.get_or_none(Account.sign_in_token == auth_token)
@@ -89,28 +89,28 @@ def sign_out():
                 account.sign_in_token = None
                 account.save()
 
-        response = make_response(jsonify({"success": True}))
+        response = make_response(jsonify({'success': True}))
         response.set_cookie(
-            "auth_token",
-            "",
+            COOKIE_KEY_NAME,
+            '',
             expires=0,
             httponly=True,
             secure=True,
-            samesite="None",
+            samesite='None',
             domain=DOMAIN_NAME,
         )
 
         return response, 200
     except Exception as e:
-        logger.error(f"Error during sign out: {str(e)}")
-        return jsonify({"error": "An error occurred during sign out"}), 500
+        logger.error(f'Error during sign out: {str(e)}')
+        return jsonify({'error': 'An error occurred during sign out'}), 500
 
 
-@auth_bp.route("/status", methods=["GET"])
+@auth_bp.route('/status', methods=['GET'])
 def auth_status():
-    auth_token = request.cookies.get("auth_token")
+    auth_token = request.cookies.get(COOKIE_KEY_NAME)
     if auth_token:
         account = Account.get_or_none(Account.sign_in_token == auth_token)
         if account:
-            return jsonify({"isSignedIn": True, "address": account.address})
-    return jsonify({"isSignedIn": False, "address": None})
+            return jsonify({'isSignedIn': True, 'address': account.address})
+    return jsonify({'isSignedIn': False, 'address': None})

@@ -19,17 +19,18 @@
 
 import os
 
-MYSQL_DATABASE = os.environ.get("MYSQL_DATABASE", "skale_portal")
-MYSQL_HOST = os.environ.get("MYSQL_HOST", "db")
+MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE', 'skale_portal')
+MYSQL_HOST = os.environ.get('MYSQL_HOST', 'db')
 
-MYSQL_USER = os.environ["MYSQL_USER"]
-MYSQL_PASSWORD = os.environ["MYSQL_PASSWORD"]
+MYSQL_USER = os.environ['MYSQL_USER']
+MYSQL_PASSWORD = os.environ['MYSQL_PASSWORD']
 
 MYSQL_PORT = 3306
 
-DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
-SECRET_KEY = os.environ["SECRET_KEY"]
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+SECRET_KEY = os.environ['SECRET_KEY']
 
-DOMAIN_NAME = os.environ["DOMAIN_NAME"]
+DOMAIN_NAME = os.environ['DOMAIN_NAME']
+COOKIE_KEY_NAME = f'auth_token_{DOMAIN_NAME}'
 
 TOKEN_EXPIRATION = 3600 * 24 * 30

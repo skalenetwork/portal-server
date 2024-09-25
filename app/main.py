@@ -31,14 +31,14 @@ init_default_logger()
 
 def create_app():
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = SECRET_KEY
-    app.config["DEBUG"] = DEBUG
+    app.config['SECRET_KEY'] = SECRET_KEY
+    app.config['DEBUG'] = DEBUG
 
     CORS(app, supports_credentials=True)
 
     initialize_db()
 
-    app.register_blueprint(auth_bp, url_prefix="/api/auth")
-    app.register_blueprint(like_bp, url_prefix="/api/apps")
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(like_bp, url_prefix='/api/apps')
 
     return app

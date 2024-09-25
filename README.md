@@ -43,6 +43,20 @@ To use with SSL certs, update the `ssl.conf` file in the `nginx` directory with 
 docker compose up --build
 ```
 
+## Development
+
+#### Pre-commit hook
+
+```bash
+ruff check app/
+```
+
+#### Format code
+
+```bash
+ruff format app/
+```
+
 ## License
 
 ![GitHub](https://img.shields.io/github/license/skalenetwork/skale.py.svg)

@@ -38,12 +38,12 @@ class App(Model):
 
 
 class LikedApp(Model):
-    account = ForeignKeyField(Account, backref="liked_apps")
-    app = ForeignKeyField(App, backref="likes")
+    account = ForeignKeyField(Account, backref='liked_apps')
+    app = ForeignKeyField(App, backref='likes')
 
     class Meta:
         database = db
-        indexes = ((("account", "app"), True),)
+        indexes = ((('account', 'app'), True),)
 
 
 def initialize_db():

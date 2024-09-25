@@ -22,9 +22,7 @@ import logging
 from logging import Formatter, StreamHandler
 
 
-LOG_FORMAT = (
-    "[%(asctime)s %(levelname)s] %(name)s:%(lineno)d - %(threadName)s - %(message)s"
-)
+LOG_FORMAT = '[%(asctime)s %(levelname)s] %(name)s:%(lineno)d - %(threadName)s - %(message)s'
 
 
 def init_default_logger():
