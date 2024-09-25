@@ -21,6 +21,7 @@ from peewee import MySQLDatabase
 from app.config import MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_PORT
 
 import pymysql
+
 pymysql.install_as_MySQLdb()
 
 db = MySQLDatabase(
