@@ -18,22 +18,28 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from app.main import create_app
-from app.utils.db_migrations import add_email_field_to_account
+from peewee import CharField
+from playhouse.migrate import MySQLMigrator, migrate
+
 from app.utils.database import db
 
-logger = logging.getLogger('portal:run')
+logger = logging.getLogger('portal:db_migrations')
 
 
-def run_migrations():
-    logger.info('Running database migrations...')
-    with db:
-        add_email_field_to_account()
-    logger.info('Database migrations completed.')
+def add_email_field_to_account():
+    migrator = MySQLMigrator(db)
 
+    email_field = CharField(null=True, unique=True)
 
-run_migrations()
-app = create_app()
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    try:
+        with db.connection_context():
+            if 'email' not in db.get_columns('account'):
+                with db.atomic():
+                    migrate(
+                        migrator.add_column('account', 'email', email_field),
+                    )
+                print('Migration completed: Added email field to Account model')
+            else:
+                print('Email field already exists in Account model')
+    except Exception as e:
+        print(f'Error during migration: {e}')

@@ -21,10 +21,11 @@ import logging
 import secrets
 from flask import Blueprint, request, jsonify, make_response
 from siwe import SiweMessage, ExpiredMessage
+from peewee import IntegrityError
 
 from app.models import Account
 from app.config import DOMAIN_NAME, COOKIE_KEY_NAME
-
+from app.utils import clear_auth_cookies, is_valid_email
 
 auth_bp = Blueprint('auth', __name__)
 logger = logging.getLogger('portal:auth')
@@ -90,17 +91,7 @@ def sign_out():
                 account.save()
 
         response = make_response(jsonify({'success': True}))
-        response.set_cookie(
-            COOKIE_KEY_NAME,
-            '',
-            expires=0,
-            httponly=True,
-            secure=True,
-            samesite='None',
-            domain=DOMAIN_NAME,
-        )
-
-        return response, 200
+        return clear_auth_cookies(response), 200
     except Exception as e:
         logger.error(f'Error during sign out: {str(e)}')
         return jsonify({'error': 'An error occurred during sign out'}), 500
@@ -114,3 +105,47 @@ def auth_status():
         if account:
             return jsonify({'isSignedIn': True, 'address': account.address})
     return jsonify({'isSignedIn': False, 'address': None})
+
+
+@auth_bp.route('/email', methods=['GET'])
+def get_email():
+    auth_token = request.cookies.get(COOKIE_KEY_NAME)
+    if not auth_token:
+        return jsonify({'error': 'Not authenticated'}), 401
+
+    account = Account.get_or_none(Account.sign_in_token == auth_token)
+    if not account:
+        return jsonify({'error': 'Invalid authentication'}), 401
+
+    if account.email:
+        return jsonify({'email': account.email}), 200
+    else:
+        return jsonify({'message': 'Email not set'}), 204
+
+
+@auth_bp.route('/update_email', methods=['POST'])
+def update_email():
+    auth_token = request.cookies.get(COOKIE_KEY_NAME)
+    if not auth_token:
+        return jsonify({'error': 'Not authenticated'}), 401
+
+    account = Account.get_or_none(Account.sign_in_token == auth_token)
+    if not account:
+        return jsonify({'error': 'Invalid authentication'}), 401
+
+    email = request.json.get('email')
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+
+    if not is_valid_email(email):
+        return jsonify({'error': 'Invalid email format'}), 400
+
+    try:
+        account.email = email
+        account.save()
+        return jsonify({'success': True, 'message': 'Email updated successfully'}), 200
+    except IntegrityError:
+        return jsonify({'error': 'Email already in use'}), 400
+    except Exception as e:
+        logger.error(f'Error updating email: {str(e)}')
+        return jsonify({'error': 'An unexpected error occurred'}), 500

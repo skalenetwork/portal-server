@@ -159,3 +159,4 @@ venv/
 ssl_certs/
 
 .ruff_cache
+tools/
