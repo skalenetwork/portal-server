@@ -17,36 +17,24 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from peewee import Model, CharField, IntegerField, ForeignKeyField
-from app.utils.database import db
+import re
+from app.config import COOKIE_KEY_NAME, DOMAIN_NAME
 
 
-class Account(Model):
-    address = CharField(unique=True)
-    sign_in_token = CharField(null=True)
-    email = CharField(unique=True, null=True)
-
-    class Meta:
-        database = db
-
-
-class App(Model):
-    app_id = CharField(unique=True)
-    like_count = IntegerField(default=0)
-
-    class Meta:
-        database = db
+def clear_auth_cookies(response):
+    response.set_cookie(COOKIE_KEY_NAME, '', expires=0, httponly=True, secure=True, samesite='None')
+    response.set_cookie(
+        COOKIE_KEY_NAME,
+        '',
+        expires=0,
+        httponly=True,
+        secure=True,
+        samesite='None',
+        domain=DOMAIN_NAME,
+    )
+    return response
 
 
-class LikedApp(Model):
-    account = ForeignKeyField(Account, backref='liked_apps')
-    app = ForeignKeyField(App, backref='likes')
-
-    class Meta:
-        database = db
-        indexes = ((('account', 'app'), True),)
-
-
-def initialize_db():
-    db.connect()
-    db.create_tables([Account, App, LikedApp])
+def is_valid_email(email):
+    pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    return re.match(pattern, email) is not None
