@@ -20,17 +20,15 @@
 import logging
 from peewee import CharField
 from playhouse.migrate import MySQLMigrator, migrate
-
 from app.utils.database import db
+from app.models import APIKey
 
 logger = logging.getLogger('portal:db_migrations')
 
 
 def add_email_field_to_account():
     migrator = MySQLMigrator(db)
-
     email_field = CharField(null=True, unique=True)
-
     try:
         with db.connection_context():
             if 'email' not in db.get_columns('account'):
@@ -43,3 +41,20 @@ def add_email_field_to_account():
                 print('Email field already exists in Account model')
     except Exception as e:
         print(f'Error during migration: {e}')
+
+
+def create_api_key_table():
+    try:
+        with db.connection_context():
+            if not APIKey.table_exists():
+                db.create_tables([APIKey])
+                print('Migration completed: Created APIKey table')
+            else:
+                print('APIKey table already exists')
+    except Exception as e:
+        print(f'Error during migration: {e}')
+
+
+def run_all_migrations():
+    add_email_field_to_account()
+    create_api_key_table()

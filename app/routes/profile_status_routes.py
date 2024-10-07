@@ -17,30 +17,24 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from flask import Flask
-from flask_cors import CORS
-from app.routes.auth_routes import auth_bp
-from app.routes.like_routes import like_bp
-from app.routes.profile_status_routes import profile_status_bp
-from app.models import initialize_db
-from app.config import SECRET_KEY, DEBUG
-from app.utils.logs import init_default_logger
+import logging
+from flask import Blueprint, jsonify
+from app.models import Account
+from app.auth import token_required
+
+profile_status_bp = Blueprint('profile_status', __name__)
+logger = logging.getLogger(__name__)
 
 
-init_default_logger()
-
-
-def create_app():
-    app = Flask(__name__)
-    app.config['SECRET_KEY'] = SECRET_KEY
-    app.config['DEBUG'] = DEBUG
-
-    CORS(app, supports_credentials=True)
-
-    initialize_db()
-
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')
-    app.register_blueprint(like_bp, url_prefix='/api/apps')
-    app.register_blueprint(profile_status_bp, url_prefix='/api/profile')
-
-    return app
+@profile_status_bp.route('/profile-status/<wallet_address>', methods=['GET'])
+@token_required
+def get_profile_status(wallet_address):
+    try:
+        account = Account.get_or_none(Account.address == wallet_address)
+        if account:
+            return jsonify({'exists': True, 'profile': account.profile_completed})
+        else:
+            return jsonify({'exists': False, 'profile': False})
+    except Exception as e:
+        logger.exception(f'Error in get_profile_status: {str(e)}')
+        return jsonify({'error': 'An unexpected error occurred'}), 500
