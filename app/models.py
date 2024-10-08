@@ -17,7 +17,10 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from peewee import Model, CharField, IntegerField, ForeignKeyField
+import secrets
+import hashlib
+from datetime import datetime
+from peewee import Model, CharField, IntegerField, ForeignKeyField, DateTimeField
 from app.utils.database import db
 
 
@@ -28,6 +31,10 @@ class Account(Model):
 
     class Meta:
         database = db
+
+    @property
+    def profile_completed(self):
+        return self.email is not None
 
 
 class App(Model):
@@ -47,6 +54,32 @@ class LikedApp(Model):
         indexes = ((('account', 'app'), True),)
 
 
+class APIKey(Model):
+    key_hash = CharField(unique=True)
+    name = CharField()
+    created_at = DateTimeField(default=datetime.now)
+    last_used = DateTimeField(null=True)
+
+    class Meta:
+        database = db
+
+    @classmethod
+    def create_key(cls, name):
+        key = secrets.token_urlsafe(32)
+        key_hash = hashlib.sha256(key.encode()).hexdigest()
+        instance = cls.create(key_hash=key_hash, name=name)
+        return instance, key
+
+    @classmethod
+    def validate_key(cls, key):
+        key_hash = hashlib.sha256(key.encode()).hexdigest()
+        instance = cls.get_or_none(cls.key_hash == key_hash)
+        if instance:
+            instance.last_used = datetime.now()
+            instance.save()
+        return instance is not None
+
+
 def initialize_db():
     db.connect()
-    db.create_tables([Account, App, LikedApp])
+    db.create_tables([Account, App, LikedApp, APIKey])

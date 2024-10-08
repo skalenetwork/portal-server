@@ -19,7 +19,7 @@
 
 import logging
 from app.main import create_app
-from app.utils.db_migrations import add_email_field_to_account
+from app.utils.db_migrations import run_all_migrations
 from app.utils.database import db
 
 logger = logging.getLogger('portal:run')
@@ -28,7 +28,7 @@ logger = logging.getLogger('portal:run')
 def run_migrations():
     logger.info('Running database migrations...')
     with db:
-        add_email_field_to_account()
+        run_all_migrations()
     logger.info('Database migrations completed.')
 
 

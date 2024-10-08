@@ -17,30 +17,21 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from flask import Flask
-from flask_cors import CORS
-from app.routes.auth_routes import auth_bp
-from app.routes.like_routes import like_bp
-from app.routes.profile_status_routes import profile_status_bp
-from app.models import initialize_db
-from app.config import SECRET_KEY, DEBUG
-from app.utils.logs import init_default_logger
+from functools import wraps
+from flask import request, jsonify
+from app.models import APIKey
 
 
-init_default_logger()
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('X-API-Key')
+        if not token:
+            return jsonify({'error': 'API key is missing'}), 401
 
+        if not APIKey.validate_key(token):
+            return jsonify({'error': 'Invalid API key'}), 401
 
-def create_app():
-    app = Flask(__name__)
-    app.config['SECRET_KEY'] = SECRET_KEY
-    app.config['DEBUG'] = DEBUG
+        return f(*args, **kwargs)
 
-    CORS(app, supports_credentials=True)
-
-    initialize_db()
-
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')
-    app.register_blueprint(like_bp, url_prefix='/api/apps')
-    app.register_blueprint(profile_status_bp, url_prefix='/api/profile')
-
-    return app
+    return decorated
