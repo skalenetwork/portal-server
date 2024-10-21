@@ -25,7 +25,7 @@ from app.routes.profile_status_routes import profile_status_bp
 from app.models import initialize_db
 from app.config import SECRET_KEY, DEBUG
 from app.utils.logs import init_default_logger
-
+from app.utils.database import db
 
 init_default_logger()
 
@@ -42,5 +42,15 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(like_bp, url_prefix='/api/apps')
     app.register_blueprint(profile_status_bp, url_prefix='/api/profile')
+
+    @app.before_request
+    def _db_connect():
+        if db.is_closed():
+            db.connect()
+
+    @app.teardown_request
+    def _db_close(exc):
+        if not db.is_closed():
+            db.close()
 
     return app
