@@ -18,17 +18,25 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from flask import Blueprint, jsonify
-from app.models import Account
-from app.auth import token_required
+from flask import Blueprint, jsonify, request
+from app.models import Account, APIKey
 
 profile_status_bp = Blueprint('profile_status', __name__)
 logger = logging.getLogger(__name__)
 
 
 @profile_status_bp.route('/profile-status/<wallet_address>', methods=['GET'])
-@token_required
 def get_profile_status(wallet_address):
+    token = request.headers.get('X-API-Key')
+    if not token:
+        return jsonify({'error': 'API key is missing'}), 401
+    try:
+        if not APIKey.validate_key(token):
+            return jsonify({'error': 'Invalid API key'}), 401
+    except Exception as e:
+        logger.exception(f'Error validating API key: {e}')
+        return jsonify({'error': 'Something went wrong during API key validation'}), 500
+
     try:
         account = Account.get_or_none(Account.address == wallet_address)
         if account:
